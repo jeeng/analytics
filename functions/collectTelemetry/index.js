@@ -2,20 +2,13 @@ import Joi from 'joi'
 import Redis from '../../redis'
 import Schemas from './validationSchemas';
 import moment from 'moment';
+import { errorBuilder } from '../../utils'
 
 const keyExpireTime = 3600 * 24 * 3
 
 const redis = new Redis()
 
 export default function (event, context, callback) {
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Go Serverless v1.0! Your function executed successfully!',
-      input: event,
-    }),
-  };
-
   const body = JSON.parse(event.body)
   const { error } = Joi.validate(body, Schemas.request.body)
   if (!!error)
@@ -46,16 +39,14 @@ export default function (event, context, callback) {
 
   redis.getClient()
     .then(client => {
+      let query = null
+
       switch (telemetry_type) {
         case 'WidgetSeen': {
           const key = `WidgetSeen:${hour}:${widget_id}`
-          return client.multi()
+          query = client.multi()
             .hincrby(key, cta_id, 1)
             .expire(key, keyExpireTime)
-            .exec((err, replies) => !!err ?
-              errorHandler(err, callback) :
-              okReply(callback)
-            )
         }
         default: {
           const key = `Telemetry:${hour}`
@@ -69,15 +60,17 @@ export default function (event, context, callback) {
             cta_id,
           })
 
-          return client.multi()
+          query = client.multi()
             .set(key, JSON.stringify(telemetry))
             .expire(key, keyExpireTime)
-            .exec((err, replies) => !!err ?
-              errorHandler(err, callback) :
-              okReply(callback)
-            )
         }
       }
+
+      return query.exec((err, replies) => {
+        return !!err ?
+          errorHandler(err, callback, client) :
+          okReply(callback, client)
+      })
     }).catch(err => callback(null, {
       statusCode: 200,
       body: JSON.stringify(err)
@@ -85,18 +78,24 @@ export default function (event, context, callback) {
 }
 
 
-const errorHandler = (err, callback) => {
-  console.log(JSON.stringify({
+const errorHandler = (err, callback, client) => {
+  if (!!client)
+    client.quit()
+  console.log(JSON.stringify(errorBuilder({
     at: 'collectTelemetry:inputValidation',
     err
-  }))
+  })))
   callback(null, {
     statusCode: 500,
-    body: JSON.stringify({ error: 'Input Error has occured.' })
+    body: JSON.stringify({ error: 'Server error.' })
   })
 }
 
-const okReply = callback => callback(null, {
-  statusCode: 200,
-  body: JSON.stringify({ stats: 'OK' })
-})
+const okReply = (callback, client) => {
+  if (!!client)
+    client.quit()
+  callback(null, {
+    statusCode: 200,
+    body: JSON.stringify({ status: 'OK' })
+  })
+}

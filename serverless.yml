@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: aws-nodejs # NOTE: update this with your service name
+service: analytics # NOTE: update this with your service name
 
 plugins:
   - serverless-webpack
@@ -39,7 +39,7 @@ provider:
 #  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
+  iamRoleStatements:
 #    - Effect: "Allow"
 #      Action:
 #        - "s3:ListBucket"
