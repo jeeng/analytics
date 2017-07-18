@@ -1,45 +1,47 @@
 import { Client } from 'pg'
 import config from './config'
 
-const client = new Client(config.connection)
-
 export default class DB {
+  constructor() {
+    this.client = new Client(config)
+  }
 
-  static runQuery(q) {
-    return client.connect()
+  runQuery(q) {
+    return this.client.connect()
       .catch(err => {
         if (err.stack.includes('Error: Client has already been connected. You cannot reuse a client.'))
           return true
         return Promise.reject({
           at: 'DB.runQuery:client.connect',
           err,
-          stack: err.stack
+          stack: err.stack,
         })
       })
-      .then(() => client.query(q))
+      .then(() => this.client.query(q))
       .catch(err => Promise.reject({
         at: 'DB.runQuery',
-        err: JSON.stringify(err)
+        err: JSON.stringify(err),
+        q
       }))
   }
 
-  static resolveQuery(q, resultEditor) {
+  resolveQuery(q, resultEditor) {
     return this.runQuery(q)
-      .then(result => resultEditor(result))
-      .catch(err => Promise.reject({ at: 'DB.resolveQuery', message: err.message, err }))
+      .then(resultEditor)
+      .catch(err => Promise.reject({ at: 'DB.resolveQuery', message: err.message, err, q }))
   }
 
-  static resolveQueryToSingleValue(q, valueName) {
+  resolveQueryToSingleValue(q, valueName) {
     return this.resolveQuery(q, result => result.rows.length === 0 ? null : result.rows[0][valueName])
   }
 
-  static resolveQueryToRows(q) {
+  resolveQueryToRows(q) {
     return this.resolveQuery(q, result => {
       return result.rows
     }).catch(err => Promise.reject({ at: 'DB.resolveQueryToRows', err }))
   }
 
-  static resolveQueryToObject(q, fieldKey, valueKey) {
+  resolveQueryToObject(q, fieldKey, valueKey) {
     return this.resolveQuery(q, result => {
       const response = {}
       result.rows.map(row => {
@@ -47,5 +49,9 @@ export default class DB {
       })
       return response
     })
+  }
+
+  closeClient() {
+    return this.client.end()
   }
 }

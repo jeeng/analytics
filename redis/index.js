@@ -20,6 +20,10 @@ export default class Redis {
     });
   }
 
+  closeClient() {
+    return this.redisClient.quit()
+  }
+
 
 
 

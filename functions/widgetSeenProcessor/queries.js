@@ -1,6 +1,8 @@
 import DB from '../../db'
 import { encodeId } from '../../utils'
 
+const db = new DB()
+
 export default class Queries {
   static getActiveWidgets() {
     const q = `
@@ -9,7 +11,7 @@ export default class Queries {
      WHERE activated = TRUE
     `
 
-    return DB.resolveQuery(q, ({ rows }) =>
+    return db.resolveQuery(q, ({ rows }) =>
       rows.map(({ id }) => encodeId(id)))
   }
 
@@ -34,17 +36,21 @@ export default class Queries {
       ) ts
     `
 
-    return DB.resolveQuery(q, ({ rows }) =>
-      rows.map(({ ts }) => timestamp))
+    return db.resolveQuery(q, ({ rows }) =>
+      rows.map(({ ts }) => ts))
   }
 
   static insertWidgetSeens(widgetSeenDataPoints) {
     const values = []
-    widgetSeenDataPoints.map(({ widgetId, timestamp, data }) => {
-      Object.keys(data).map(ctaId =>
-        values.push(`(${timestamp}, ${widgetId}, ${ctaId}, ${data[ctaId]})`)
-      )
-    })
+    widgetSeenDataPoints
+      .map(({ widgetId, timestamp, data }) => {
+        Object.keys(data).map(ctaId =>
+          values.push(`(${timestamp}, ${widgetId}, ${ctaId}, ${data[ctaId]})`)
+        )
+      })
+
+    if (!values.length)
+      return Promise.resolve(true)
 
     const q = `
       INSERT INTO service.hourly_widget_seens
@@ -53,7 +59,12 @@ export default class Queries {
       ON CONFLICT ON CONSTRAINT unique_hourly_widget_seens
       DO NOTHING
     `
+    console.log(q);
 
-    return DB.runQuery(q)
+    return db.runQuery(q)
+  }
+
+  static closeClient() {
+    return db.closeClient()
   }
 };

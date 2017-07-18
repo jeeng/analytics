@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:func": "SLS_DEBUG=true NODE_ENV=development serverless webpack invoke --stage development --function",
+    "test:func": "SLS_DEBUG=true NODE_ENV=development redis-server & serverless webpack invoke --stage development --function",
     "start": "NODE_ENV=development redis-server & serverless offline start --stage development",
     "deploy": "NODE_ENV=staging serverless deploy --stage staging",
     "deploy:func": "NODE_ENV=staging serverless deploy --stage staging --function",
