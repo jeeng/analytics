@@ -4,7 +4,7 @@ export default {
   request: {
     body: Joi.object().keys({
       telemetry_type: Joi.string().required(),
-      notification_type: Joi.string(),
+      notification_type: Joi.string().allow(null),
       session_id: Joi.string(),
       widget_id: Joi.string(),
       jeeng_id: Joi.string(),
