@@ -1,23 +1,26 @@
-import pg from 'pg'
+import { Client } from 'pg'
 import config from './config'
 
-const { connectionString } = config
-
+const client = new Client(config.connection)
 
 export default class DB {
 
   static runQuery(q) {
-    return new Promise((resolve, reject) => {
-      pg.connect(connectionString, (err, client, done) => {
-        if (client === null)
-          return reject({ at: 'DB.runQuery', err: 'Client connect Error.' })
-        client.query(q, (err, result) => {
-          done();
-          if (err) return reject({ at: 'DB.runQuery', message: err.message, err, q })
-          return resolve(result)
-        });
-      });
-    })
+    return client.connect()
+      .catch(err => {
+        if (err.stack.includes('Error: Client has already been connected. You cannot reuse a client.'))
+          return true
+        return Promise.reject({
+          at: 'DB.runQuery:client.connect',
+          err,
+          stack: err.stack
+        })
+      })
+      .then(() => client.query(q))
+      .catch(err => Promise.reject({
+        at: 'DB.runQuery',
+        err: JSON.stringify(err)
+      }))
   }
 
   static resolveQuery(q, resultEditor) {
