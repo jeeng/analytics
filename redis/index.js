@@ -8,15 +8,19 @@ export default class Redis {
     this.redisClient = null
   }
 
-  getReady() {
+  getClient() {
     if (this.clientReady)
-      return Promise.resolve(true)
+      return Promise.resolve(this.redisClient)
 
     this.redisClient = redis.createClient(config.connection)
     return new Promise((resolve, reject) => {
       this.redisClient.on('error', err =>
         reject(errorBuilder({ at: 'Redis:startup', err })))
-      this.redisClient.on('ready', () => { this.clientReady = true; resolve(true) })
+      this.redisClient.on('ready', () => { this.clientReady = true; resolve(this.redisClient) })
     });
   }
+
+
+
+
 };
