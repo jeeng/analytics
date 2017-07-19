@@ -68,7 +68,7 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  collectTelemtry:
+  collectTelemetry:
     handler: handler.collectTelemetry
     name: ${opt:stage}-collectTelemetry
     events:
@@ -80,6 +80,10 @@ functions:
   widgetSeenProcessor:
     handler: handler.widgetSeenProcessor
     name: ${opt:stage}-widgetSeenProcessor
+
+  telemetryProcessor:
+    handler: handler.telemetryProcessor
+    name: ${opt:stage}-telemetryProcessor
     
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

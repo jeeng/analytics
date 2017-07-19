@@ -37,6 +37,25 @@ export default class Redis {
       }))
   }
 
+  lrange(key, start, end) {
+    const lrangePromise = new Promise((resolve, reject) =>
+      this.getClient().then(client =>
+        client.lrange(key, start, end, (err, response) =>
+          !!err ? reject(err) : resolve(response)
+        )
+      )
+    )
+
+    return lrangePromise
+
+    // return lrangePromise
+    //   .then(values => values.map((value, i) => ({ value, key: keys[i] })))
+    //   .catch(err => errorBuilder({
+    //     at: 'Redis.mget',
+    //     err
+    //   }))
+  }
+
   closeClient() {
     return this.redisClient.quit()
   }

@@ -18,29 +18,15 @@ export default function (event, context, callback) {
         )
       )
   }
-    
-  const nextTimestamp = Queries.getNextTimestamp()
 
-  return Promise.all([
-    activeWidgets,
-    nextTimestamp
-  ]).then(([widgetIds, nextTimestamp]) =>
-    redis.mget(widgetIds.map(widgetId =>
-      `WidgetSeen::${nextTimestamp}::${widgetId}`))
-    )
-    .then(keyValuePairs => keyValuePairs.map(({ key, value }) => {
-      const [ts, widgetId] = key.split('::').slice(1)
-      return {
-        ts,
-        widgetId: decodeId(widgetId),
-        count: parseInt(value) || 0
-      }
-    }))
-    .then(Queries.insertWidgetSeens)
+  return Queries.getNextTimestamp()
+    .then(nextTimestamp =>
+      redis.lrange(`Telemetries::${nextTimestamp}`))
+    .then(Queries.insertTelemetries)
     .then(() => Promise.all([
       redis.closeClient(),
       Queries.closeClient(),
     ]))
     .then(() => callback(null, 'execution finished.'))
-    .catch(err => errorHandler('widgetSeenProcessor', err))
+    .catch(err => errorHandler('telemetryProcessor', err))
 }
