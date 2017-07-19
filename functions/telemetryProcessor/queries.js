@@ -59,8 +59,7 @@ export default class Queries {
       )
       VALUES ${values.join(',')}
     `
-    console.log(q);
-
+    
     return db.runQuery(q)
   }
 
