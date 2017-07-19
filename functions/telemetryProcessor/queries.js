@@ -24,7 +24,7 @@ export default class Queries {
         ELSE
           MAX(hour) + interval '1 hour'
         END::varchar AS next_ts
-        FROM service.hourly_widget_seens
+        FROM service.telemetries
     `
 
     return db.resolveQuery(q, ({ rows }) => rows[0] && rows[0].next_ts)

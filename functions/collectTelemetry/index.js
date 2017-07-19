@@ -24,18 +24,10 @@ export default function (event, context, callback) {
     cta_id } = body;
 
   const coeff = 1000 * 3600
-  const hour = moment(Math.floor(Date.now() / coeff) * coeff)
+  const createdAtTs = Date.now()
+  const created_at = moment(createdAtTs).format('YYYY-MM-DD HH:mm:ss')
+  const hour = moment(Math.ceil(createdAtTs / coeff) * coeff)
     .format('YYYY-MM-DD HH:mm:ss')
-
-  const telemetry = JSON.stringify({
-    notification_type,
-    telemetry_type,
-    session_id,
-    widget_id,
-    jeeng_id,
-    user_id,
-    cta_id,
-  })
 
   redis.getClient()
     .then(client => {
@@ -53,6 +45,7 @@ export default function (event, context, callback) {
           const telemetry = JSON.stringify({
             notification_type,
             telemetry_type,
+            created_at,
             session_id,
             widget_id,
             jeeng_id,
