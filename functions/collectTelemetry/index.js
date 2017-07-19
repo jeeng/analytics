@@ -49,7 +49,7 @@ export default function (event, context, callback) {
             .expire(key, keyExpireTime)
         }
         default: {
-          const key = `Telemetry::${hour}`
+          const key = `Telemetries::${hour}`
           const telemetry = JSON.stringify({
             notification_type,
             telemetry_type,
