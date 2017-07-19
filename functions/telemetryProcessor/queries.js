@@ -12,7 +12,7 @@ export default class Queries {
           date_trunc('hour',NOW()) - interval '1 day'
         ELSE
           date_trunc('hour',MAX(created_at) + interval '30 minutes') + interval '1 hour'
-        END::varchar AS next_ts
+        END::timestamp::varchar AS next_ts
       FROM service.telemetries
     `
 
