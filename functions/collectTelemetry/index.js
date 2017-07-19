@@ -43,13 +43,13 @@ export default function (event, context, callback) {
 
       switch (telemetry_type) {
         case 'WidgetSeen': {
-          const key = `WidgetSeen:${hour}:${widget_id}`
+          const key = `WidgetSeen::${hour}::${widget_id}`
           query = client.multi()
-            .hincrby(key, cta_id, 1)
+            .incr(key)
             .expire(key, keyExpireTime)
         }
         default: {
-          const key = `Telemetry:${hour}`
+          const key = `Telemetry::${hour}`
           const telemetry = JSON.stringify({
             notification_type,
             telemetry_type,
