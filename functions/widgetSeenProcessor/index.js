@@ -8,7 +8,15 @@ const redis = new Redis()
 export default function (event, context, callback) {
   const errorHandler = (at, err) => {
     console.log(errorBuilder({ at, err }));
-    callback(null, 'Ended with error')
+    Promise.all([
+      redis.closeClient(),
+      Queries.closeClient(),
+    ]).then(() => callback(null, 'Ended with error'))
+      .catch(err2 =>
+        callback(null,
+          `Error closing down connections:${JSON.stringify(err2)}`
+        )
+      )
   }
 
   const activeWidgets = Queries.getActiveWidgets()
@@ -30,6 +38,10 @@ export default function (event, context, callback) {
       }
     }))
     .then(Queries.insertWidgetSeens)
+    .then(() => Promise.all([
+      redis.closeClient(),
+      Queries.closeClient(),
+    ]))
     .then(() => callback(null, 'execution finished.'))
     .catch(err => errorHandler('widgetSeenProcessor', err))
 }
