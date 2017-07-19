@@ -19,7 +19,7 @@ export default class Queries {
     return db.resolveQuery(q, ({ rows }) => rows[0] && rows[0].next_ts)
   }
 
-  static insertTelemetries(telemetries) {
+  static insertTelemetries(telemetries, nextTimestamp) {
     const values = telemetries
       .map(({
         notification_type,
@@ -42,14 +42,11 @@ export default class Queries {
           decodeId(cta_id || null)
         ].join(',')})`)
 
-    if (!values.length)
-      return Promise.resolve(true)
-
-    const q = `
+    const q = !!values.length ? `
       INSERT INTO service.telemetries
       (
         notification_type_id,
-        telemetry_type,
+        telemetry_type_id,
         created_at,
         session_id,
         widget_id,
@@ -59,6 +56,16 @@ export default class Queries {
         cta_id
       )
       VALUES ${values.join(',')}
+    ` : `
+      INSERT INTO service.telemetries
+      (
+        telemetry_type_id,
+        created_at
+      )
+      VALUES (
+        (SELECT id FROM service.telemetry_types WHERE name = 'NO_DATA'),
+        '${nextTimestamp}'
+      )
     `
 
     return db.runQuery(q)
