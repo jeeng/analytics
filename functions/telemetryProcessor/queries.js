@@ -16,8 +16,6 @@ export default class Queries {
       FROM service.telemetries
     `
 
-    console.log(q);
-
     return db.resolveQuery(q, ({ rows }) => rows[0] && rows[0].next_ts)
   }
 
@@ -29,6 +27,7 @@ export default class Queries {
         created_at = null,
         session_id = null,
         widget_id = null,
+        domain_id = null,
         jeeng_id = null,
         user_id = null,
         cta_id = null }) => `(${[
@@ -53,6 +52,7 @@ export default class Queries {
         created_at,
         session_id,
         widget_id,
+        domain_id,
         jeeng_id,
         user_id,
         cta_id

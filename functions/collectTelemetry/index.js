@@ -19,6 +19,7 @@ export default function (event, context, callback) {
     telemetry_type,
     session_id,
     widget_id,
+    domain_id,
     jeeng_id,
     user_id,
     cta_id } = body;
@@ -48,6 +49,7 @@ export default function (event, context, callback) {
             created_at,
             session_id,
             widget_id,
+            domain_id,
             jeeng_id,
             user_id,
             cta_id,

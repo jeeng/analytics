@@ -21,7 +21,7 @@ export default function (event, context, callback) {
 
   return Queries.getNextTimestamp()
     .then(nextTimestamp =>
-      redis.lrange(`Telemetries::${nextTimestamp}`))
+      redis.lrange(`Telemetries::${nextTimestamp}`, 0, -1))
     .then(Queries.insertTelemetries)
     .then(() => Promise.all([
       redis.closeClient(),
