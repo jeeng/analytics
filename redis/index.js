@@ -57,7 +57,7 @@ export default class Redis {
   }
 
   closeClient() {
-    return this.redisClient.quit()
+    return this.redisClient && this.redisClient.quit()
   }
 
 

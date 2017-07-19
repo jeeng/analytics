@@ -43,7 +43,7 @@ export default function (event, context, callback) {
         }
         default: {
           const key = `Telemetries::${hour}`
-          const telemetry = JSON.stringify({
+          const telemetry = {
             notification_type,
             telemetry_type,
             created_at,
@@ -53,7 +53,7 @@ export default function (event, context, callback) {
             jeeng_id,
             user_id,
             cta_id,
-          })
+          }
 
           query = client.multi()
             .rpush(key, JSON.stringify(telemetry))

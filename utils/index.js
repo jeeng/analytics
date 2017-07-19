@@ -16,7 +16,7 @@ export const encodeId = id => {
 export const decodeId = hashid => {
   try {
     const idArr = hashIds.decode(hashid)
-    return !!idArr.length && idArr[0] || []
+    return !!idArr.length && idArr[0] || null
   } catch (e) {
     return undefined
   }
