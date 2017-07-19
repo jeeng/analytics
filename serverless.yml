@@ -18,6 +18,7 @@ plugins:
   - serverless-offline
 
 custom:
+  funcParam: 'a'
   webpackIncludeModules: true
   serverless-offline:
     port: 8083
@@ -70,7 +71,7 @@ provider:
 functions:
   collectTelemetry:
     handler: handler.collectTelemetry
-    name: ${opt:stage}-collectTelemetry
+    name: ${opt:stage}-${self:custom.funcParam}collectTelemetry
     events:
     - http:
         path: /telemetries
@@ -79,11 +80,11 @@ functions:
 
   widgetSeenProcessor:
     handler: handler.widgetSeenProcessor
-    name: ${opt:stage}-widgetSeenProcessor
+    name: ${opt:stage}-${self:custom.funcParam}widgetSeenProcessor
 
   telemetryProcessor:
     handler: handler.telemetryProcessor
-    name: ${opt:stage}-telemetryProcessor
+    name: ${opt:stage}-${self:custom.funcParam}telemetryProcessor
     
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
