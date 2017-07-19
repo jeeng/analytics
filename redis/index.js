@@ -20,6 +20,23 @@ export default class Redis {
     });
   }
 
+  mget(keys) {
+    const mgetPromise = new Promise((resolve, reject) =>
+      this.getClient().then(client =>
+        client.mget(keys, (err, response) =>
+          !!err ? reject(err) : resolve(response)
+        )
+      )
+    )
+
+    return mgetPromise
+      .then(values => values.map((value, i) => ({ value, key: keys[i] })))
+      .catch(err => errorBuilder({
+        at: 'Redis.mget',
+        err
+      }))
+  }
+
   closeClient() {
     return this.redisClient.quit()
   }

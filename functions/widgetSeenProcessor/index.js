@@ -1,6 +1,7 @@
 import Redis from '../../redis'
 import Queries from './queries'
 import { errorBuilder } from '../../utils'
+import moment from 'moment'
 
 const redis = new Redis()
 
@@ -11,34 +12,32 @@ export default function (event, context, callback) {
   }
 
   const activeWidgets = Queries.getActiveWidgets()
-  const missingTimestamps = Queries.getMissingTimestamps()
+  const nextTimestamp = Queries.getNextTimestamp()
 
-  Promise.all([
+  return Promise.all([
     activeWidgets,
-    missingTimestamps
-  ]).then(([widgetIds, missingTimestamps]) => {
-    const fromRedis = []
+    nextTimestamp
+  ]).then(([widgetIds, nextTimestamp]) => {
+    const keys = widgetIds
+      .map(widgetId => `WidgetSeen:${nextTimestamp}:${widgetId}`)
 
-    widgetIds.map(widgetId => {
-      fromRedis.push(...missingTimestamps.map(timestamp => {
-        const key = `WidgetSeen:${timestamp}:${widgetId}`
-        return redis.getClient()
-          .then(client => client.hgetall(key))
-          .then(data => ({ widgetId, timestamp, data }))
-      }))
-    })
-
-    return Promise.all(fromRedis)
-      // .catch(err => errorHandler('fromRedisPromises', err))
-      .then(x => { console.log(x); return x })
-      .then(Queries.insertWidgetSeens)
-      .catch(err => errorHandler('WidgetSeenInsertion', err))
-      .then(() => Promise.all([
-        redis.closeClient(),
-        Queries.closeClient()
-      ]))
-      .then(() => callback(null, 'execution finished!'))
+    return redis.mget(keys)
+      .then(x => { console.log('processed results:', x); return x })
   }).catch(err => errorHandler('widgetSeenProcessor', err))
 
 
+  // const fromRedisChain = fromRedis.reduce((a, b) => a.then(aRes => {
+  //   return b.then(bRes => [...aRes, bRes])
+  // }), Promise.resolve([]))
+
+  // return fromRedisChain
+  //   // .catch(err => errorHandler('fromRedisPromises', err))
+  //   .then(x => { console.log(x); return x })
+  //   .then(Queries.insertWidgetSeens)
+  //   .catch(err => errorHandler('WidgetSeenInsertion', err))
+  //   .then(() => Promise.all([
+  //     redis.closeClient(),
+  //     Queries.closeClient()
+  //   ]))
+  //   .then(() => callback(null, 'execution finished!'))
 }

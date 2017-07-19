@@ -15,29 +15,19 @@ export default class Queries {
       rows.map(({ id }) => encodeId(id)))
   }
 
-  static getMissingTimestamps() {
+  static getNextTimestamp() {
     const q = `
-      WITH latest_insertion AS (
-        SELECT CASE WHEN
+      SELECT CASE WHEN
          MAX(created_at) IS NULL
         THEN
           date_trunc('hour',NOW()) - interval '1 day'
         ELSE
           MAX(created_at) + interval '1 hour'
-        END AS timestamp
+        END::varchar AS next_ts
         FROM service.hourly_widget_seens
-      )
-
-      SELECT ts::timestamp
-      FROM generate_series(
-        (SELECT timestamp FROM latest_insertion),
-        date_trunc('hour',NOW()),
-        '1 hour'::interval
-      ) ts
     `
 
-    return db.resolveQuery(q, ({ rows }) =>
-      rows.map(({ ts }) => ts))
+    return db.resolveQuery(q, ({ rows }) => rows[0] && rows[0].next_ts)
   }
 
   static insertWidgetSeens(widgetSeenDataPoints) {
