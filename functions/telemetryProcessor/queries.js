@@ -22,7 +22,7 @@ export default class Queries {
   static insertTelemetries(telemetries) {
     const values = telemetries
       .map(({
-        notification_type = null,
+        notification_type,
         telemetry_type,
         created_at = null,
         session_id = null,
@@ -31,9 +31,10 @@ export default class Queries {
         jeeng_id = null,
         user_id = null,
         cta_id = null }) => `(${[
-          notification_type,
-          telemetry_type,
           created_at,
+          !!notification_type ?
+            `(SELECT id FROM service.notification_types WHERE name = ${notification_type})` : null,
+          `(SELECT id FROM service.telemetry_types WHERE name = ${telemetry_type})`,
           decodeId(session_id) || null,
           decodeId(widget_id) || null,
           decodeId(jeeng_id) || null,
@@ -47,7 +48,7 @@ export default class Queries {
     const q = `
       INSERT INTO service.telemetries
       (
-        notification_type,
+        notification_type_id,
         telemetry_type,
         created_at,
         session_id,
@@ -59,7 +60,7 @@ export default class Queries {
       )
       VALUES ${values.join(',')}
     `
-    
+
     return db.runQuery(q)
   }
 
