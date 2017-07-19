@@ -61,7 +61,7 @@ export default function (event, context, callback) {
           })
 
           query = client.multi()
-            .set(key, JSON.stringify(telemetry))
+            .rpush(key, JSON.stringify(telemetry))
             .expire(key, keyExpireTime)
         }
       }
