@@ -35,11 +35,12 @@ export default function (event, context, callback) {
       let query = null
 
       switch (telemetry_type) {
-        case 'WidgetSeen': {
+        case 'WIDGET_SEEN': {
           const key = `WidgetSeen::${hour}::${widget_id}`
           query = client.multi()
             .incr(key)
             .expire(key, keyExpireTime)
+          break
         }
         default: {
           const key = `Telemetries::${hour}`
@@ -58,6 +59,7 @@ export default function (event, context, callback) {
           query = client.multi()
             .rpush(key, JSON.stringify(telemetry))
             .expire(key, keyExpireTime)
+          break
         }
       }
 

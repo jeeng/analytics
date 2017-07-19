@@ -17,17 +17,24 @@ export default class Queries {
 
   static getNextTimestamp() {
     const q = `
-      SELECT CASE WHEN
-         MAX(hour) IS NULL
-        THEN
-          date_trunc('hour',NOW()) - interval '1 day'
-        ELSE
-          MAX(hour) + interval '1 hour'
-        END::varchar AS next_ts
+      WITH next_insertion_time AS (
+        SELECT
+          CASE WHEN
+            MAX(hour) IS NULL
+          THEN
+            date_trunc('hour',NOW()) - interval '3 hours'
+          ELSE
+            MAX(hour) + interval '1 hour'
+          END::timestamp AS next_ts
         FROM service.hourly_widget_seens
+      )
+
+      SELECT next_ts::varchar, next_ts <=NOW() AS valid_ts
+      FROM next_insertion_time
     `
 
-    return db.resolveQuery(q, ({ rows }) => rows[0] && rows[0].next_ts)
+    return db.resolveQuery(q, ({ rows }) =>
+      rows[0] && rows[0].valid_ts && rows[0].next_ts)
   }
 
   static insertWidgetSeens(widgetSeenDataPoints) {

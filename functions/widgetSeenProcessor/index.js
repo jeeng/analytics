@@ -26,8 +26,10 @@ export default function (event, context, callback) {
     activeWidgets,
     nextTimestamp
   ]).then(([widgetIds, nextTimestamp]) =>
-    redis.mget(widgetIds.map(widgetId =>
-      `WidgetSeen::${nextTimestamp}::${widgetId}`))
+    !!nextTimestamp ?
+      redis.mget(widgetIds.map(widgetId =>
+        `WidgetSeen::${nextTimestamp}::${widgetId}`)) :
+      Promise.reject('FUTURE_TS')
     )
     .then(keyValuePairs => keyValuePairs.map(({ key, value }) => {
       const [ts, widgetId] = key.split('::').slice(1)
