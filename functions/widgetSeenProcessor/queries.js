@@ -18,11 +18,11 @@ export default class Queries {
   static getNextTimestamp() {
     const q = `
       SELECT CASE WHEN
-         MAX(created_at) IS NULL
+         MAX(hour) IS NULL
         THEN
           date_trunc('hour',NOW()) - interval '1 day'
         ELSE
-          MAX(created_at) + interval '1 hour'
+          MAX(hour) + interval '1 hour'
         END::varchar AS next_ts
         FROM service.hourly_widget_seens
     `
@@ -31,20 +31,15 @@ export default class Queries {
   }
 
   static insertWidgetSeens(widgetSeenDataPoints) {
-    const values = []
-    widgetSeenDataPoints
-      .map(({ widgetId, timestamp, data }) => {
-        Object.keys(data).map(ctaId =>
-          values.push(`(${timestamp}, ${widgetId}, ${ctaId}, ${data[ctaId]})`)
-        )
-      })
+    const values = widgetSeenDataPoints
+      .map(({ ts, widgetId, count }) => (`('${ts}', ${widgetId}, ${count})`))
 
     if (!values.length)
       return Promise.resolve(true)
 
     const q = `
       INSERT INTO service.hourly_widget_seens
-      (hour, widget_id, cta_id, count)
+      (hour, widget_id, count)
       VALUES ${values.join(',')}
       ON CONFLICT ON CONSTRAINT unique_hourly_widget_seens
       DO NOTHING
