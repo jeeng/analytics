@@ -81,10 +81,14 @@ functions:
   widgetSeenProcessor:
     handler: handler.widgetSeenProcessor
     name: ${opt:stage}-${self:custom.funcParam}widgetSeenProcessor
+    events:
+      - schedule: rate(15 minutes)
 
   telemetryProcessor:
     handler: handler.telemetryProcessor
     name: ${opt:stage}-${self:custom.funcParam}telemetryProcessor
+    events:
+      - schedule: rate(15 minutes)
     
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
