@@ -57,12 +57,18 @@ export default class Redis {
   }
 
   closeClient() {
-    return this.redisClient && this.redisClient.quit(err => {
-      if (!!err)
-        return Promise.reject(errorBuilder({ at: 'Redis.closeClient', err }))
-      this.clientReady = false
-      this.redisClient = null
-      return Promise.resolve(true)
+    return new Promise((resolve, reject) => {
+      if (!this.redisClient)
+        resolve(true)
+      this.redisClient.quit(err => {
+        if (!!err)
+          return reject(errorBuilder({
+            at: 'Redis.closeClient', err
+          }))
+        this.clientReady = false
+        this.redisClient = null
+        return resolve(true)
+      })
     })
   }
 

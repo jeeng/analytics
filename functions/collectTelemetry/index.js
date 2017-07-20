@@ -9,6 +9,48 @@ const keyExpireTime = 3600 * 24 * 3
 const redis = new Redis()
 
 export default function (event, context, callback) {
+  const errorHandler = (err, callback) => {
+    redis.closeClient()
+      .then(() => {
+        console.log(JSON.stringify(errorBuilder({
+          at: 'collectTelemetry:inputValidation',
+          err
+        })))
+        callback(null, {
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Server error.' })
+        })
+      }).catch(err => {
+        console.log(JSON.stringify(errorBuilder({
+          at: 'errorHandler',
+          err
+        })));
+        callback(null, {
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Server error.' })
+        })
+      })
+  }
+
+  const okReply = (callback) => {
+    redis.closeClient()
+      .then(() => {
+        callback(null, {
+          statusCode: 200,
+          body: JSON.stringify({ status: 'OK' })
+        })
+      }).catch(err => {
+        console.log(JSON.stringify(errorBuilder({
+          at: 'errorHandler',
+          err
+        })));
+        callback(null, {
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Server error.' })
+        })
+      })
+  }
+
   const body = JSON.parse(event.body)
   const { error } = Joi.validate(body, Schemas.request.body)
   if (!!error)
@@ -72,27 +114,4 @@ export default function (event, context, callback) {
       statusCode: 200,
       body: JSON.stringify(err)
     }))
-}
-
-
-const errorHandler = (err, callback, client) => {
-  if (!!client)
-    client.quit()
-  console.log(JSON.stringify(errorBuilder({
-    at: 'collectTelemetry:inputValidation',
-    err
-  })))
-  callback(null, {
-    statusCode: 500,
-    body: JSON.stringify({ error: 'Server error.' })
-  })
-}
-
-const okReply = (callback, client) => {
-  if (!!client)
-    client.quit()
-  callback(null, {
-    statusCode: 200,
-    body: JSON.stringify({ status: 'OK' })
-  })
 }
