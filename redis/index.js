@@ -57,7 +57,10 @@ export default class Redis {
   }
 
   closeClient() {
-    return this.redisClient && this.redisClient.quit()
+    this.redisClient && this.redisClient.quit()
+    this.clientReady = false
+    this.redisClient = null
+    return true
   }
 
 
