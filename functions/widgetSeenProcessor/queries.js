@@ -51,7 +51,7 @@ export default class Queries {
       INSERT INTO service.hourly_widget_telemetries
       (hour, widget_id, count, telemetry_type_id)
       VALUES ${values.join(',')}
-      ON CONFLICT ON CONSTRAINT unique_hourly_widget_seens
+      ON CONFLICT ON CONSTRAINT unique_hourly_widget_telemetries
       DO NOTHING
     `
     console.log(q);
