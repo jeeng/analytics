@@ -22,7 +22,7 @@ export default class Queries {
           CASE WHEN
             MAX(hour) IS NULL
           THEN
-            date_trunc('hour',NOW()) - interval '3 hours'
+            date_trunc('hour',NOW()) - interval '24 hours'
           ELSE
             MAX(hour) + interval '1 hour'
           END::timestamp AS next_ts

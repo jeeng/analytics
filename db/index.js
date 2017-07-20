@@ -1,12 +1,20 @@
 import { Client } from 'pg'
 import config from './config'
+import { errorBuilder } from '../utils'
 
 export default class DB {
   constructor() {
-    this.client = new Client(config)
+    this.client = null
+  }
+
+  getClient() {
+    if (!this.client)
+      this.client = new Client(config)
+    return Promise.resolve()
   }
 
   runQuery(q) {
+    this.getClient()
     return this.client.connect()
       .catch(err => {
         if (err.stack.includes('Error: Client has already been connected. You cannot reuse a client.'))
@@ -53,5 +61,10 @@ export default class DB {
 
   closeClient() {
     return this.client.end()
+      .then(() => this.client = null)
+      .catch(err => errorBuilder({
+        at: 'DB.closeClient',
+        err
+      }))
   }
 }
