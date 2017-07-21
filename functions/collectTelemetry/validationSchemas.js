@@ -10,6 +10,7 @@ export default {
       jeeng_id: Joi.string().allow(null),
       user_id: Joi.string().allow(null),
       cta_id: Joi.string().allow(null),
+      domain_id: Joi.string().allow(null)
     })
   }
 }
