@@ -25,15 +25,10 @@ export default function (event, context, callback) {
   ]).then(() => callback(null, 'execution finished.'))
 
   const initData = Queries.getInitData()
-    .then(x => { console.log(x); return x })
   const telemetryStrings = initData
-    .then(({ next_ts }) => {
-      console.log('next_ts', next_ts);
-
-      return !!next_ts ?
-        redis.lrange(`Telemetries::${next_ts}`, 0, -1) :
-        Promise.reject('FUTURE_TS')
-    }
+    .then(({ next_ts }) => !!next_ts ?
+      redis.lrange(`Telemetries::${next_ts}`, 0, -1) :
+      Promise.reject('FUTURE_TS')
     )
 
   return Promise.all([
@@ -49,7 +44,7 @@ export default function (event, context, callback) {
         telemetry.telemetry_type_id =
           telemetry_types[telemetry.telemetry_type]
         telemetry.notification_type_id =
-          telemetry_types[telemetry.notification_type]
+          notification_types[telemetry.notification_type]
         return telemetry
       } catch (e) {
         return null

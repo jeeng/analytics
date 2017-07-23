@@ -33,7 +33,7 @@ export default class Queries {
       , notification_types AS (
         SELECT
           json_agg(json_build_object('id',id,'name',name)) AS notification_types
-        FROM service.telemetry_types
+        FROM service.notification_types
       )
 
       SELECT
