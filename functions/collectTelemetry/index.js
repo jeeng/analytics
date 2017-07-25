@@ -37,6 +37,9 @@ export default function (event, context, callback) {
       .then(() => {
         callback(null, {
           statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*"
+          },
           body: JSON.stringify({ status: 'OK' })
         })
       }).catch(err => {

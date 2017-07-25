@@ -74,9 +74,11 @@ functions:
     name: ${opt:stage}-${self:custom.funcParam}collectTelemetry
     events:
     - http:
-        path: /telemetries
+        path: telemetries
         method: POST
         cors: true
+        
+
 
   widgetSeenProcessor:
     handler: handler.widgetSeenProcessor
